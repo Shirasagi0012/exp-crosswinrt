@@ -26,8 +26,10 @@ pub struct WinrtComponentBindgen {
     flat: bool,
     minimal: bool,
     shims_path: String,
+    future_path: String,
     patch_array: bool,
     patch_factory_cache: bool,
+    patch_future: bool,
     generate_server: bool,
     emit_rerun_if_changed: bool,
 }
@@ -53,8 +55,10 @@ impl WinrtComponentBindgen {
             flat: true,
             minimal: true,
             shims_path: "::winrt_server_shims".to_string(),
+            future_path: "::winrt_future".to_string(),
             patch_array: true,
             patch_factory_cache: true,
+            patch_future: true,
             generate_server: true,
             emit_rerun_if_changed: true,
         }
@@ -143,6 +147,18 @@ impl WinrtComponentBindgen {
         self
     }
 
+    /// Sets the Rust path prefix used when rewriting `windows_future::` (default: `"::winrt_future"`).
+    pub fn future_path(mut self, path: impl Into<String>) -> Self {
+        self.future_path = path.into();
+        self
+    }
+
+    /// Controls replacing `windows_future::` with `<future_path>::` (default: `true`).
+    pub fn patch_future(mut self, enabled: bool) -> Self {
+        self.patch_future = enabled;
+        self
+    }
+
     /// Controls generating `pub mod server` factory traits/proxies for runtime classes
     /// when `flat = true` and `implement(...)` rules are configured (default: `true`).
     pub fn server(mut self, enabled: bool) -> Self {
@@ -206,7 +222,7 @@ impl WinrtComponentBindgen {
         }
         bindgen.write();
 
-        if self.patch_array || self.patch_factory_cache || self.generate_server {
+        if self.patch_array || self.patch_factory_cache || self.patch_future || self.generate_server {
             let content = std::fs::read_to_string(&self.output).unwrap_or_else(|e| {
                 panic!(
                     "Failed to read generated WinRT bindings '{}': {e}",
@@ -223,6 +239,9 @@ impl WinrtComponentBindgen {
             } else {
                 content.clone()
             };
+            if self.patch_future {
+                updated = apply_future_patch(&updated, &self.future_path);
+            }
             if self.generate_server && self.flat && !self.implements.is_empty() {
                 let server_mod =
                     server_gen::generate_server_module(&self.inputs, &updated, &self.shims_path);
@@ -296,9 +315,16 @@ pub fn apply_shims_patches(
     out
 }
 
+/// Rewrites `windows_future::` references in generated `windows-bindgen` source text
+/// to the configured cross-platform future crate path (e.g. `"::winrt_future"`).
+pub fn apply_future_patch(source: &str, future_path: &str) -> String {
+    let replacement = format!("{future_path}::");
+    source.replace("windows_future::", &replacement)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{apply_shims_patches, compile_rdl};
+    use super::{apply_future_patch, apply_shims_patches, compile_rdl};
 
     #[test]
     fn patches_array_and_factory_cache() {
@@ -312,6 +338,11 @@ mod tests {
         assert!(!patched.contains("windows_core::Array"));
         assert!(patched.contains("::winrt_server_shims::DummyFactoryCache::new()"));
         assert!(patched.contains("::winrt_server_shims::WinRtArray::<u8>::from_raw_parts"));
+
+        let future_src = "fn Run(&self) -> windows_core::Result<windows_future::IAsyncOperation<i32>>";
+        let future_patched = apply_future_patch(future_src, "::winrt_future");
+        assert!(!future_patched.contains("windows_future::"));
+        assert!(future_patched.contains("::winrt_future::IAsyncOperation<i32>"));
     }
 
     #[test]

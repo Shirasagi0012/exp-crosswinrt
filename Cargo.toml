@@ -3,10 +3,12 @@ resolver = "3"
 members = [
     "crates/winrt-cross-pal",
     "crates/winrt-server-shims",
+    "crates/winrt-future",
     "crates/winrt-component-build",
 ]
 exclude = [
     "examples/calculator/rust",
+    "examples/async_demo/rust",
     "third_party/windows-rs",
 ]
 
@@ -25,4 +27,5 @@ windows-metadata = { path = "third_party/windows-rs/crates/libs/metadata" }
 windows-rdl = { path = "third_party/windows-rs/crates/libs/rdl" }
 winrt-cross-pal = { path = "crates/winrt-cross-pal" }
 winrt-server-shims = { path = "crates/winrt-server-shims" }
+winrt-future = { path = "crates/winrt-future" }
 winrt-component-build = { path = "crates/winrt-component-build" }

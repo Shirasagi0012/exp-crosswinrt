@@ -1,0 +1,13 @@
+[package]
+name = "winrt-future"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Cross-platform WinRT async ABI types (IAsyncAction, IAsyncOperation<T>) backed by Tokio"
+
+[dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "sync"] }
+windows-core = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "time", "macros"] }

@@ -1,0 +1,20 @@
+use Windows::Foundation::*;
+use Windows::Foundation::Metadata::*;
+
+#[winrt]
+mod AsyncDemo {
+    #[guid(auto)]
+    #[ExclusiveTo(AsyncWorker)]
+    interface IAsyncWorker {
+        fn DelayAsync(&self, #[in] millis: u32) -> IAsyncAction;
+        fn FibonacciAsync(&self, #[in] n: u32) -> IAsyncOperation<u64>;
+        fn ProcessStepsAsync(&self, #[in] steps: u32, #[in] stepDelayMillis: u32) -> IAsyncOperationWithProgress<String, u32>;
+        fn SumPairAsync(&self, #[in] left: IAsyncOperation<i32>, #[in] right: IAsyncOperation<i32>) -> IAsyncOperation<i32>;
+        fn FailAsync(&self, #[in] immediate: bool) -> IAsyncOperation<i32>;
+    }
+
+    #[Activatable(1)]
+    class AsyncWorker {
+        IAsyncWorker,
+    }
+}

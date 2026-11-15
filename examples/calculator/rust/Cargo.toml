@@ -1,0 +1,22 @@
+[package]
+name = "calculator_rust"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+windows-core = { path = "../../../third_party/windows-rs/crates/libs/core" }
+winrt-cross-pal = { path = "../../../crates/winrt-cross-pal" }
+winrt-server-shims = { path = "../../../crates/winrt-server-shims" }
+
+[build-dependencies]
+winrt-component-build = { path = "../../../crates/winrt-component-build" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1

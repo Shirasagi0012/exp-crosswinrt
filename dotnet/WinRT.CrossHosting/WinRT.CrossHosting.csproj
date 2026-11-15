@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>WinRT.CrossHosting</AssemblyName>
+    <RootNamespace>WinRT.CrossHosting</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsAotCompatible>true</IsAotCompatible>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>WinRT.CrossHosting</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>rust-csharp-winrtabi</Authors>
+    <Description>Cross-platform WinRT ABI hosting runtime for CsWinRT 3.0 on Linux and macOS, redirecting WinRT platform P/Invokes to native winrt-cross-pal libraries.</Description>
+    <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
+    <PackageTags>winrt;cswinrt;rust;linux;macos;interop;ffi</PackageTags>
+
+    <_CsWinRTRoot Condition="'$(_CsWinRTRoot)' == ''">$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', '..', 'third_party', 'cswinrt'))</_CsWinRTRoot>
+    <_WinRTRuntimeReleasePath>$(_CsWinRTRoot)/src/WinRT.Runtime/bin/Release/net10.0/WinRT.Runtime.dll</_WinRTRuntimeReleasePath>
+    <_WinRTRuntimeDebugPath>$(_CsWinRTRoot)/src/WinRT.Runtime/bin/Debug/net10.0/WinRT.Runtime.dll</_WinRTRuntimeDebugPath>
+    <WinRTRuntimeAssemblyPath Condition="'$(WinRTRuntimeAssemblyPath)' == '' and Exists('$(_WinRTRuntimeReleasePath)')">$(_WinRTRuntimeReleasePath)</WinRTRuntimeAssemblyPath>
+    <WinRTRuntimeAssemblyPath Condition="'$(WinRTRuntimeAssemblyPath)' == '' and Exists('$(_WinRTRuntimeDebugPath)')">$(_WinRTRuntimeDebugPath)</WinRTRuntimeAssemblyPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="WinRT.Runtime">
+      <HintPath>$(WinRTRuntimeAssemblyPath)</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

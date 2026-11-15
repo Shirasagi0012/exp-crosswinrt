@@ -1,0 +1,6 @@
+[submodule "third_party/windows-rs"]
+	path = third_party/windows-rs
+	url = https://github.com/microsoft/windows-rs.git
+[submodule "third_party/cswinrt"]
+	path = third_party/cswinrt
+	url = https://github.com/microsoft/cswinrt

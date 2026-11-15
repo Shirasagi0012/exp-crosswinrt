@@ -1,0 +1,11 @@
+<Project>
+
+  <PropertyGroup>
+    <_WinRTRustBuildPropsImported>true</_WinRTRustBuildPropsImported>
+    <WinRTTargetFramework Condition="'$(WinRTTargetFramework)' == ''">net10.0</WinRTTargetFramework>
+    <WinRTSdkVersion Condition="'$(WinRTSdkVersion)' == ''">26100</WinRTSdkVersion>
+    <WinRTCsWinRTConfig Condition="'$(WinRTCsWinRTConfig)' == ''">Debug</WinRTCsWinRTConfig>
+    <WinRTCsWinRTRoot Condition="'$(WinRTCsWinRTRoot)' == ''">$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', '..', '..', 'third_party', 'cswinrt'))</WinRTCsWinRTRoot>
+  </PropertyGroup>
+
+</Project>

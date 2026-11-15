@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>WinRT.RustComponent.Build</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>rust-csharp-winrtabi</Authors>
+    <Description>MSBuild targets and props automating CsWinRT 3.0 WinMD contract generation, reference/forwarder projections, merged interop generation, and Rust Cargo native integration.</Description>
+    <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
+    <PackageTags>winrt;cswinrt;rust;msbuild;winmd;interop</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="build\WinRT.RustComponent.Build.props" Pack="true" PackagePath="build/WinRT.RustComponent.Build.props" />
+    <None Include="build\WinRT.RustComponent.Build.targets" Pack="true" PackagePath="build/WinRT.RustComponent.Build.targets" />
+    <None Include="buildTransitive\WinRT.RustComponent.Build.props" Pack="true" PackagePath="buildTransitive/WinRT.RustComponent.Build.props" />
+    <None Include="buildTransitive\WinRT.RustComponent.Build.targets" Pack="true" PackagePath="buildTransitive/WinRT.RustComponent.Build.targets" />
+  </ItemGroup>
+
+</Project>

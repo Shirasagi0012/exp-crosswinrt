@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\build\WinRT.RustComponent.Build.props"
+          Condition="'$(_WinRTRustBuildPropsImported)' != 'true'" />
+</Project>

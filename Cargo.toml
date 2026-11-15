@@ -1,0 +1,28 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/winrt-cross-pal",
+    "crates/winrt-server-shims",
+    "crates/winrt-component-build",
+]
+exclude = [
+    "examples/calculator/rust",
+    "third_party/windows-rs",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["parsing", "printing", "full"] }
+windows-core = { path = "third_party/windows-rs/crates/libs/core" }
+windows-bindgen = { path = "third_party/windows-rs/crates/libs/bindgen" }
+windows-metadata = { path = "third_party/windows-rs/crates/libs/metadata" }
+windows-rdl = { path = "third_party/windows-rs/crates/libs/rdl" }
+winrt-cross-pal = { path = "crates/winrt-cross-pal" }
+winrt-server-shims = { path = "crates/winrt-server-shims" }
+winrt-component-build = { path = "crates/winrt-component-build" }

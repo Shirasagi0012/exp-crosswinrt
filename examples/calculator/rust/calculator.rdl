@@ -1,0 +1,56 @@
+use Windows::Foundation::Metadata::*;
+
+#[winrt]
+mod CalculatorDemo {
+    #[repr(i32)]
+    enum CalcOp {
+        Add = 0,
+        Subtract = 1,
+        Multiply = 2,
+        Divide = 3,
+    }
+
+    struct CalcRecord {
+        Op: CalcOp,
+        Left: f64,
+        Right: f64,
+        Result: f64,
+    }
+
+    #[guid(auto)]
+    interface ICalcObserver {
+        fn OnEvaluated(&self, #[in] record: CalcRecord);
+    }
+
+    #[guid(auto)]
+    #[ExclusiveTo(Calculator)]
+    interface ICalculator {
+        #[get] Memory: f64;
+        fn Evaluate(&self, #[in] op: CalcOp, #[in] left: f64, #[in] right: f64) -> f64;
+        fn EvaluateWithObserver(&self, #[in] op: CalcOp, #[in] left: f64, #[in] right: f64, #[in] observer: ICalcObserver) -> f64;
+        fn EvaluateBatch(&self, #[in] op: CalcOp, #[in] values: [f64]) -> f64;
+        fn MemoryAdd(&self, #[in] value: f64) -> f64;
+        fn MemoryClear(&self);
+        fn GetHistory(&self) -> [CalcRecord];
+        fn FormatLastRecord(&self) -> String;
+    }
+
+    #[guid(auto)]
+    #[ExclusiveTo(Calculator)]
+    interface ICalculatorFactory {
+        fn CreateCalculator(&self, #[in] initialMemory: f64) -> Calculator;
+    }
+
+    #[guid(auto)]
+    #[ExclusiveTo(Calculator)]
+    interface ICalculatorStatics {
+        fn QuickEval(&self, #[in] op: CalcOp, #[in] left: f64, #[in] right: f64) -> f64;
+    }
+
+    #[Activatable(1)]
+    #[Activatable(ICalculatorFactory, 1)]
+    #[Static(ICalculatorStatics, 1)]
+    class Calculator {
+        ICalculator,
+    }
+}

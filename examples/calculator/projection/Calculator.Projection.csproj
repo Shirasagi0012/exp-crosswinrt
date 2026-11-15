@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../dotnet/WinRT.RustComponent.Build/build/WinRT.RustComponent.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Calculator.Projection</AssemblyName>
+    <RootNamespace>CalculatorDemo</RootNamespace>
+    <Nullable>enable</Nullable>
+    <WinRTProjection>true</WinRTProjection>
+    <WinRTContractWinMD>../rust/target/winmd/CalculatorDemo.winmd</WinRTContractWinMD>
+    <WinRTCargoManifest>../rust/Cargo.toml</WinRTCargoManifest>
+    <WinRTAutoBuildCargo>true</WinRTAutoBuildCargo>
+    <WinRTCopyNativeLibrary>false</WinRTCopyNativeLibrary>
+  </PropertyGroup>
+
+  <Import Project="../../../dotnet/WinRT.RustComponent.Build/build/WinRT.RustComponent.Build.targets" />
+</Project>

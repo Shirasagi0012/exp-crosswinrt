@@ -1,0 +1,364 @@
+<Project>
+
+  <PropertyGroup>
+    <_WinRTRustBuildTargetsImported>true</_WinRTRustBuildTargetsImported>
+    <WinRTTargetFramework Condition="'$(WinRTTargetFramework)' == ''">net10.0</WinRTTargetFramework>
+    <WinRTSdkVersion Condition="'$(WinRTSdkVersion)' == ''">26100</WinRTSdkVersion>
+    <WinRTCsWinRTConfig Condition="'$(WinRTCsWinRTConfig)' == ''">Debug</WinRTCsWinRTConfig>
+    <WinRTCsWinRTRoot Condition="'$(WinRTCsWinRTRoot)' == ''">$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', '..', '..', 'third_party', 'cswinrt'))</WinRTCsWinRTRoot>
+
+    <_WinRTRuntimeReleaseDll>$(WinRTCsWinRTRoot)/src/WinRT.Runtime/bin/Release/$(WinRTTargetFramework)/WinRT.Runtime.dll</_WinRTRuntimeReleaseDll>
+    <_WinRTRuntimeDebugDll>$(WinRTCsWinRTRoot)/src/WinRT.Runtime/bin/Debug/$(WinRTTargetFramework)/WinRT.Runtime.dll</_WinRTRuntimeDebugDll>
+    <WinRTRuntimeAssemblyPath Condition="'$(WinRTRuntimeAssemblyPath)' == '' and Exists('$(_WinRTRuntimeReleaseDll)')">$(_WinRTRuntimeReleaseDll)</WinRTRuntimeAssemblyPath>
+    <WinRTRuntimeAssemblyPath Condition="'$(WinRTRuntimeAssemblyPath)' == '' and Exists('$(_WinRTRuntimeDebugDll)')">$(_WinRTRuntimeDebugDll)</WinRTRuntimeAssemblyPath>
+
+    <_WinRTRuntimeRefDll>$(WinRTCsWinRTRoot)/src/WinRT.Runtime/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)-ref/WinRT.Runtime.dll</_WinRTRuntimeRefDll>
+    <_WinRTSdkRefDll>$(WinRTCsWinRTRoot)/src/Projections/Windows/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)/ref/Microsoft.Windows.SDK.NET.dll</_WinRTSdkRefDll>
+    <_WinRTSdkForwarderDll>$(WinRTCsWinRTRoot)/src/Projections/Windows/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)/Microsoft.Windows.SDK.NET.dll</_WinRTSdkForwarderDll>
+    <_WinRTSdkProjectionDll>$(WinRTCsWinRTRoot)/src/WinRT.Sdk.Projection/bin/$(WinRTCsWinRTConfig)/$(WinRTSdkVersion)/WinRT.Sdk.Projection.dll</_WinRTSdkProjectionDll>
+    <_WinRTSdkWinMdsDir>$(WinRTCsWinRTRoot)/src/WinRT.Sdk.Projection/obj/$(WinRTCsWinRTConfig)/$(WinRTSdkVersion)/sdkwinmds</_WinRTSdkWinMdsDir>
+    <_WinRTInternalWinMd>$(WinRTCsWinRTRoot)/src/WinRT.Internal/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)-windows10.0.$(WinRTSdkVersion).1/WindowsRuntime.Internal.winmd</_WinRTInternalWinMd>
+
+    <_WinRTGeneratorTasksDll>$(WinRTCsWinRTRoot)/src/WinRT.Generator.Tasks/bin/$(WinRTCsWinRTConfig)/netstandard2.0/WinRT.Generator.Tasks.dll</_WinRTGeneratorTasksDll>
+    <_WinRTWinMDGeneratorDir>$(WinRTCsWinRTRoot)/src/WinRT.WinMD.Generator/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)</_WinRTWinMDGeneratorDir>
+    <_WinRTProjectionRefGeneratorDir>$(WinRTCsWinRTRoot)/src/WinRT.Projection.Ref.Generator/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)</_WinRTProjectionRefGeneratorDir>
+    <_WinRTImplGeneratorDir>$(WinRTCsWinRTRoot)/src/WinRT.Impl.Generator/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)</_WinRTImplGeneratorDir>
+    <_WinRTProjectionGeneratorDir>$(WinRTCsWinRTRoot)/src/WinRT.Projection.Generator/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)</_WinRTProjectionGeneratorDir>
+    <_WinRTInteropGeneratorDir>$(WinRTCsWinRTRoot)/src/WinRT.Interop.Generator/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)</_WinRTInteropGeneratorDir>
+    <_WinRTSourceGeneratorDll>$(WinRTCsWinRTRoot)/src/WinRT.SourceGenerator/bin/$(WinRTCsWinRTConfig)/$(WinRTTargetFramework)/WinRT.SourceGenerator.dll</_WinRTSourceGeneratorDll>
+  </PropertyGroup>
+
+  <!-- ===================================================================== -->
+  <!-- Role 1: WinRT Contract (.cs -> .winmd)                                -->
+  <!-- ===================================================================== -->
+  <ItemGroup Condition="'$(WinRTContract)' == 'true' and '$(WinRTAddRuntimeReference)' != 'false' and '$(WinRTRuntimeAssemblyPath)' != ''">
+    <Reference Include="WinRT.Runtime">
+      <HintPath>$(WinRTRuntimeAssemblyPath)</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <UsingTask TaskName="RunCsWinRTWinMDGenerator"
+             AssemblyFile="$(_WinRTGeneratorTasksDll)"
+             Condition="'$(WinRTContract)' == 'true'" />
+
+  <Target Name="WinRTGenerateContractWinMD"
+          AfterTargets="Build"
+          DependsOnTargets="FindReferenceAssembliesForReferences"
+          Condition="'$(WinRTContract)' == 'true'">
+    <PropertyGroup>
+      <WinRTOutputWinMDPath Condition="'$(WinRTOutputWinMDPath)' == ''">$(TargetDir)$(AssemblyName).winmd</WinRTOutputWinMDPath>
+      <WinRTWinMDVersion Condition="'$(WinRTWinMDVersion)' == ''">1.0.0.0</WinRTWinMDVersion>
+    </PropertyGroup>
+
+    <RunCsWinRTWinMDGenerator
+      InputAssemblyPath="$(TargetPath)"
+      ReferenceAssemblyPaths="@(ReferencePathWithRefAssemblies)"
+      OutputWinmdPath="$(WinRTOutputWinMDPath)"
+      AssemblyVersion="$(WinRTWinMDVersion)"
+      UseWindowsUIXamlProjections="false"
+      CsWinRTToolsDirectory="$(_WinRTWinMDGeneratorDir)"
+      CsWinRTToolsArchitecture="AnyCPU" />
+  </Target>
+
+  <!-- ===================================================================== -->
+  <!-- Role 2: WinRT Reference Projection + Forwarder (.winmd -> .Projection) -->
+  <!-- ===================================================================== -->
+  <PropertyGroup Condition="'$(WinRTProjection)' == 'true'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
+    <DefineConstants>$(DefineConstants);CSWINRT_REFERENCE_PROJECTION</DefineConstants>
+    <NoWarn>$(NoWarn);CS0108;CS0109;CS0114;CS1591;CS0219;CS0628;CS0660;CA2257;CS8597</NoWarn>
+    <WinRTIncludeNamespaces Condition="'$(WinRTIncludeNamespaces)' == ''">$(RootNamespace)</WinRTIncludeNamespaces>
+    <WinRTExcludeNamespaces Condition="'$(WinRTExcludeNamespaces)' == ''">Windows;Microsoft</WinRTExcludeNamespaces>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(WinRTProjection)' == 'true'">
+    <Reference Include="WinRT.Runtime">
+      <HintPath>$(_WinRTRuntimeRefDll)</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Windows.SDK.NET">
+      <HintPath>$(_WinRTSdkRefDll)</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <UsingTask TaskName="RunCsWinRTProjectionRefGenerator"
+             AssemblyFile="$(_WinRTGeneratorTasksDll)"
+             Condition="'$(WinRTProjection)' == 'true'" />
+  <UsingTask TaskName="RunCsWinRTForwarderImplGenerator"
+             AssemblyFile="$(_WinRTGeneratorTasksDll)"
+             Condition="'$(WinRTProjection)' == 'true'" />
+
+  <Target Name="WinRTGenerateReferenceProjection"
+          BeforeTargets="BeforeCompile;CoreCompile"
+          Condition="'$(WinRTProjection)' == 'true'">
+    <Error Condition="'$(WinRTContractWinMD)' == ''"
+           Text="[WinRT.RustComponent.Build] WinRTContractWinMD must be specified when WinRTProjection=true." />
+
+    <PropertyGroup>
+      <_GeneratedCsWinRTDir>$(IntermediateOutputPath)GeneratedFiles/CsWinRT</_GeneratedCsWinRTDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(_GeneratedCsWinRTDir)" />
+    <ItemGroup>
+      <_ExistingCsWinRTFiles Include="$(_GeneratedCsWinRTDir)/*.cs" />
+    </ItemGroup>
+    <Delete Files="@(_ExistingCsWinRTFiles)" />
+
+    <ItemGroup>
+      <_WinRTProjInputs Include="$(WinRTContractWinMD)" />
+      <_WinRTProjInputs Include="@(WinRTAdditionalWinMD)" Condition="'@(WinRTAdditionalWinMD)' != ''" />
+      <_WinRTProjInputs Include="$(_WinRTSdkWinMdsDir)" />
+      <_WinRTProjIncludeNs Include="$(WinRTIncludeNamespaces)" />
+      <_WinRTProjExcludeNs Include="$(WinRTExcludeNamespaces)" />
+    </ItemGroup>
+
+    <RunCsWinRTProjectionRefGenerator
+      InputWinMDPaths="@(_WinRTProjInputs)"
+      OutputDirectory="$(_GeneratedCsWinRTDir)"
+      OutputAssemblyName="$(AssemblyName)"
+      TargetFramework="$(WinRTTargetFramework)"
+      IncludeNamespaces="@(_WinRTProjIncludeNs)"
+      ExcludeNamespaces="@(_WinRTProjExcludeNs)"
+      ReferenceProjection="true"
+      CsWinRTToolsDirectory="$(_WinRTProjectionRefGeneratorDir)"
+      CsWinRTToolsArchitecture="AnyCPU" />
+
+    <ItemGroup>
+      <Compile Include="$(_GeneratedCsWinRTDir)/*.cs" Exclude="@(Compile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="WinRTGenerateForwarderImpl"
+          AfterTargets="Compile"
+          Condition="'$(WinRTProjection)' == 'true'">
+    <PropertyGroup>
+      <_WinRTForwarderDir>$(IntermediateOutputPath)forwarder/</_WinRTForwarderDir>
+      <_WinRTForwarderPath>$(_WinRTForwarderDir)$(AssemblyName).dll</_WinRTForwarderPath>
+    </PropertyGroup>
+    <MakeDir Directories="$(_WinRTForwarderDir)" />
+
+    <RunCsWinRTForwarderImplGenerator
+      ReferenceAssemblyPaths="@(ReferencePath)"
+      OutputAssemblyPath="@(IntermediateAssembly)"
+      GeneratedAssemblyDirectory="$(_WinRTForwarderDir)"
+      CsWinRTToolsDirectory="$(_WinRTImplGeneratorDir)"
+      CsWinRTToolsArchitecture="AnyCPU" />
+
+    <ItemGroup>
+      <_SourceItemsToCopyToOutputDirectory Include="@(IntermediateAssembly)" TargetPath="ref/$(AssemblyName).dll" />
+      <FileWrites Include="@(IntermediateAssembly);$(_WinRTForwarderPath)" />
+      <IntermediateAssembly Remove="@(IntermediateAssembly)" />
+      <IntermediateAssembly Include="$(_WinRTForwarderPath)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- ===================================================================== -->
+  <!-- Role 3: WinRT Consumer Interop (Merged Projection + WinRT.Interop.dll) -->
+  <!-- ===================================================================== -->
+  <PropertyGroup Condition="'$(WinRTConsumeInterop)' == 'true'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);WindowsRuntime.Generated</InterceptorsNamespaces>
+    <NoWarn>$(NoWarn);CSWINRT3001</NoWarn>
+    <CsWinRTGenerateGetIidInterceptors Condition="'$(CsWinRTGenerateGetIidInterceptors)' == ''">true</CsWinRTGenerateGetIidInterceptors>
+    <CsWinRTAotOptimizerEnabled Condition="'$(CsWinRTAotOptimizerEnabled)' == ''">true</CsWinRTAotOptimizerEnabled>
+    <CsWinRTAotExportsEnabled Condition="'$(CsWinRTAotExportsEnabled)' == ''">false</CsWinRTAotExportsEnabled>
+    <CsWinRTCcwLookupTableGeneratorEnabled Condition="'$(CsWinRTCcwLookupTableGeneratorEnabled)' == ''">true</CsWinRTCcwLookupTableGeneratorEnabled>
+    <CsWinRTAotWarningLevel Condition="'$(CsWinRTAotWarningLevel)' == ''">1</CsWinRTAotWarningLevel>
+    <WinRTMarshallingMode Condition="'$(WinRTMarshallingMode)' == ''">minimal</WinRTMarshallingMode>
+    <WinRTEnableServerGC Condition="'$(WinRTEnableServerGC)' == ''">true</WinRTEnableServerGC>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(WinRTConsumeInterop)' == 'true'">
+    <CompilerVisibleProperty Include="CsWinRTGenerateGetIidInterceptors" />
+    <CompilerVisibleProperty Include="CsWinRTAotOptimizerEnabled" />
+    <CompilerVisibleProperty Include="CsWinRTAotExportsEnabled" />
+    <CompilerVisibleProperty Include="CsWinRTCcwLookupTableGeneratorEnabled" />
+    <CompilerVisibleProperty Include="CsWinRTAotWarningLevel" />
+
+    <Reference Include="WinRT.Runtime" Condition="'$(WinRTAddRuntimeReference)' != 'false' and '$(WinRTRuntimeAssemblyPath)' != ''">
+      <HintPath>$(WinRTRuntimeAssemblyPath)</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Windows.SDK.NET">
+      <HintPath>$(_WinRTSdkRefDll)</HintPath>
+    </Reference>
+    <Analyzer Include="$(_WinRTSourceGeneratorDll)" />
+  </ItemGroup>
+
+  <Target Name="WinRTResolveComponentReferences"
+          BeforeTargets="ResolveAssemblyReferences;AssignProjectConfiguration"
+          Condition="'$(WinRTConsumeInterop)' == 'true' and '@(WinRTComponent)' != ''">
+    <ItemGroup>
+      <Reference Include="%(WinRTComponent.RefAssembly)" Condition="'%(WinRTComponent.RefAssembly)' != ''" />
+    </ItemGroup>
+  </Target>
+
+  <UsingTask TaskName="RunCsWinRTMergedProjectionGenerator"
+             AssemblyFile="$(_WinRTGeneratorTasksDll)"
+             Condition="'$(WinRTConsumeInterop)' == 'true'" />
+  <UsingTask TaskName="RunCsWinRTInteropGenerator"
+             AssemblyFile="$(_WinRTGeneratorTasksDll)"
+             Condition="'$(WinRTConsumeInterop)' == 'true'" />
+
+  <Target Name="WinRTGenerateInterop"
+          AfterTargets="Compile"
+          DependsOnTargets="FindReferenceAssembliesForReferences"
+          Condition="'$(WinRTConsumeInterop)' == 'true'">
+    <PropertyGroup>
+      <_WinRTMergedProjectionPath>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'WinRT.Projection.dll'))</_WinRTMergedProjectionPath>
+      <_WinRTInteropAssemblyPath>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'WinRT.Interop.dll'))</_WinRTInteropAssemblyPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_WinRTProjRefNames Include="Microsoft.Windows.SDK.NET" />
+      <_WinRTProjRefNames Include="$([System.IO.Path]::GetFileNameWithoutExtension('%(WinRTComponent.RefAssembly)'))"
+                          Condition="'%(WinRTComponent.RefAssembly)' != '' and '%(WinRTComponent.ProjectionAssemblyName)' == ''" />
+      <_WinRTProjRefNames Include="%(WinRTComponent.ProjectionAssemblyName)"
+                          Condition="'%(WinRTComponent.ProjectionAssemblyName)' != ''" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_WinRTProjRefNamesSemi>;@(_WinRTProjRefNames);</_WinRTProjRefNamesSemi>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_WinRTMergedProjectionRefs Include="@(ReferencePathWithRefAssemblies)" />
+      <_WinRTMergedProjectionRefs Include="$(_WinRTSdkProjectionDll)" />
+      <_WinRTWinMDPathsList Include="@(WinRTComponent->'%(WinMD)')" Condition="'%(WinRTComponent.WinMD)' != ''" />
+      <_WinRTWinMDPathsList Include="@(WinRTAdditionalWinMD)" Condition="'@(WinRTAdditionalWinMD)' != ''" />
+      <_WinRTWinMDPathsList Include="$(_WinRTInternalWinMd)" />
+    </ItemGroup>
+
+    <RunCsWinRTMergedProjectionGenerator
+      ReferenceAssemblyPaths="@(_WinRTMergedProjectionRefs)"
+      GeneratedAssemblyDirectory="$(IntermediateOutputPath)"
+      WinMDPaths="@(_WinRTWinMDPathsList)"
+      TargetFramework="$(WinRTTargetFramework)"
+      WindowsMetadata="$(_WinRTSdkWinMdsDir)"
+      CsWinRTToolsDirectory="$(_WinRTProjectionGeneratorDir)"
+      CsWinRTToolsArchitecture="AnyCPU" />
+
+    <ItemGroup>
+      <_WinRTImplAssemblies Include="@(ReferencePath)"
+                            Condition="!$(_WinRTProjRefNamesSemi.Contains(';%(FileName);'))" />
+      <_WinRTImplAssemblies Include="$(_WinRTSdkForwarderDll)" />
+      <_WinRTImplAssemblies Include="@(WinRTComponent->'%(ForwarderAssembly)')"
+                            Condition="'%(WinRTComponent.ForwarderAssembly)' != ''" />
+    </ItemGroup>
+
+    <RunCsWinRTInteropGenerator
+      ReferenceAssemblyPaths="@(ReferencePathWithRefAssemblies)"
+      ImplementationAssemblyPaths="@(_WinRTImplAssemblies)"
+      OutputAssemblyPath="@(IntermediateAssembly)"
+      WinRTSdkProjectionAssemblyPath="$(_WinRTSdkProjectionDll)"
+      WinRTProjectionAssemblyPath="$(_WinRTMergedProjectionPath)"
+      InteropAssemblyDirectory="$(IntermediateOutputPath)"
+      CsWinRTToolsDirectory="$(_WinRTInteropGeneratorDir)"
+      CsWinRTToolsArchitecture="AnyCPU"
+      MarshallingMode="$(WinRTMarshallingMode)"
+      EnableServerGC="$(WinRTEnableServerGC)" />
+
+    <ItemGroup>
+      <_WinRTRemoveCopyLocal Include="@(ReferenceCopyLocalPaths)"
+                             Condition="$(_WinRTProjRefNamesSemi.Contains(';%(FileName);'))" />
+      <CsWinRTGeneratedAssemblies Include="$(_WinRTInteropAssemblyPath);$(_WinRTMergedProjectionPath);$(_WinRTSdkProjectionDll)">
+        <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+        <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+        <IncludeRuntimeDependency>true</IncludeRuntimeDependency>
+        <Private>true</Private>
+        <Platforms>AnyCPU</Platforms>
+      </CsWinRTGeneratedAssemblies>
+      <ReferencePath Include="@(CsWinRTGeneratedAssemblies)" />
+      <ReferenceCopyLocalPaths Remove="@(_WinRTRemoveCopyLocal)" />
+      <ReferenceCopyLocalPaths Include="$(_WinRTSdkForwarderDll);@(WinRTComponent->'%(ForwarderAssembly)');@(CsWinRTGeneratedAssemblies)" />
+      <FileWrites Include="$(_WinRTInteropAssemblyPath);$(_WinRTMergedProjectionPath)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- ===================================================================== -->
+  <!-- Role 4 (Optional): Rust Cargo Build & Native PAL Auto-Registration     -->
+  <!-- ===================================================================== -->
+  <PropertyGroup Condition="'$(WinRTCargoManifest)' != ''">
+    <_WinRTCargoManifestFull Condition="!$([System.IO.Path]::IsPathRooted('$(WinRTCargoManifest)'))">$([System.IO.Path]::GetFullPath('$([System.IO.Path]::Combine("$(MSBuildProjectDirectory)", "$(WinRTCargoManifest)"))'))</_WinRTCargoManifestFull>
+    <_WinRTCargoManifestFull Condition="$([System.IO.Path]::IsPathRooted('$(WinRTCargoManifest)'))">$([System.IO.Path]::GetFullPath('$(WinRTCargoManifest)'))</_WinRTCargoManifestFull>
+    <_WinRTCargoManifestDir Condition="Exists('$(_WinRTCargoManifestFull)')">$([System.IO.Path]::GetDirectoryName('$(_WinRTCargoManifestFull)'))</_WinRTCargoManifestDir>
+    <_WinRTCargoTomlText Condition="Exists('$(_WinRTCargoManifestFull)')">$([System.IO.File]::ReadAllText('$(_WinRTCargoManifestFull)'))</_WinRTCargoTomlText>
+    <_WinRTCargoLibMatch>$([System.Text.RegularExpressions.Regex]::Match('$(_WinRTCargoTomlText)', '\[lib\][^\[]*?name\s*=\s*"([^"]+)"', System.Text.RegularExpressions.RegexOptions.Singleline).Groups[1].Value.Trim())</_WinRTCargoLibMatch>
+    <_WinRTCargoPkgMatch>$([System.Text.RegularExpressions.Regex]::Match('$(_WinRTCargoTomlText)', '\[package\][^\[]*?name\s*=\s*"([^"]+)"', System.Text.RegularExpressions.RegexOptions.Singleline).Groups[1].Value.Trim())</_WinRTCargoPkgMatch>
+
+    <WinRTNativeLibrary Condition="'$(WinRTNativeLibrary)' == '' and '$(_WinRTCargoLibMatch)' != ''">$(_WinRTCargoLibMatch.Replace('-', '_'))</WinRTNativeLibrary>
+    <WinRTNativeLibrary Condition="'$(WinRTNativeLibrary)' == '' and '$(_WinRTCargoPkgMatch)' != ''">$(_WinRTCargoPkgMatch.Replace('-', '_'))</WinRTNativeLibrary>
+
+    <WinRTCargoProfile Condition="'$(WinRTCargoProfile)' == '' and '$(Configuration)' == 'Release'">release</WinRTCargoProfile>
+    <WinRTCargoProfile Condition="'$(WinRTCargoProfile)' == ''">debug</WinRTCargoProfile>
+    <WinRTCargoTargetDir Condition="'$(WinRTCargoTargetDir)' == '' and '$(_WinRTCargoManifestDir)' != ''">$([System.IO.Path]::Combine('$(_WinRTCargoManifestDir)', 'target'))</WinRTCargoTargetDir>
+
+    <_WinRTNativePrefix Condition="!$([MSBuild]::IsOSPlatform('Windows'))">lib</_WinRTNativePrefix>
+    <_WinRTNativeExt Condition="$([MSBuild]::IsOSPlatform('Windows'))">dll</_WinRTNativeExt>
+    <_WinRTNativeExt Condition="$([MSBuild]::IsOSPlatform('Linux'))">so</_WinRTNativeExt>
+    <_WinRTNativeExt Condition="$([MSBuild]::IsOSPlatform('OSX'))">dylib</_WinRTNativeExt>
+
+    <WinRTNativeLibraryPath Condition="'$(WinRTNativeLibraryPath)' == '' and '$(WinRTCargoTargetDir)' != '' and '$(WinRTNativeLibrary)' != ''">$([System.IO.Path]::Combine('$(WinRTCargoTargetDir)', '$(WinRTCargoProfile)', '$(_WinRTNativePrefix)$(WinRTNativeLibrary).$(_WinRTNativeExt)'))</WinRTNativeLibraryPath>
+    <WinRTNativeLibraryHintPath Condition="'$(WinRTNativeLibraryHintPath)' == '' and '$(WinRTNativeLibraryPath)' != ''">$(WinRTNativeLibraryPath)</WinRTNativeLibraryHintPath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(WinRTNativeLibrary)' != '' and '$(WinRTEmitNativeLibraryAttribute)' != 'false' and '$(WinRTConsumeInterop)' == 'true'">
+    <AssemblyAttribute Include="WinRT.CrossHosting.WinRTCrossNativeLibraryAttribute">
+      <_Parameter1>$(WinRTNativeLibrary)</_Parameter1>
+      <_Parameter2 Condition="'$(WinRTNativeLibraryHintPath)' != ''">$(WinRTNativeLibraryHintPath)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <Target Name="WinRTEmitCrossHostBootstrap"
+          BeforeTargets="BeforeCompile;CoreCompile"
+          Condition="'$(WinRTNativeLibrary)' != '' and '$(WinRTEmitCrossHostBootstrap)' != 'false' and '$(WinRTConsumeInterop)' == 'true'">
+    <PropertyGroup>
+      <_WinRTBootstrapFile>$(IntermediateOutputPath)WinRTCrossHostBootstrap.g.cs</_WinRTBootstrapFile>
+      <_WinRTBootstrapCode>// &lt;auto-generated /&gt;
+namespace WinRT.CrossHosting.Generated
+{
+    internal static class WinRTCrossHostBootstrap
+    {
+        [global::System.Runtime.CompilerServices.ModuleInitializer]
+        internal static void Init()
+        {
+            global::WinRT.CrossHosting.WinRTCrossHost.Initialize()%3B
+        }
+    }
+}</_WinRTBootstrapCode>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_WinRTBootstrapFile)"
+                      Lines="$(_WinRTBootstrapCode)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true"
+                      Encoding="UTF-8" />
+    <ItemGroup>
+      <Compile Include="$(_WinRTBootstrapFile)" Exclude="@(Compile)" />
+      <FileWrites Include="$(_WinRTBootstrapFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="WinRTBuildRustComponent"
+          BeforeTargets="WinRTGenerateReferenceProjection;WinRTCopyNativeLibrary;CoreCompile"
+          Condition="'$(WinRTAutoBuildCargo)' == 'true' and '$(_WinRTCargoManifestFull)' != '' and Exists('$(_WinRTCargoManifestFull)') and '$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <_CargoCmd>cargo build --manifest-path "$(_WinRTCargoManifestFull)"</_CargoCmd>
+      <_CargoCmd Condition="'$(WinRTCargoProfile)' == 'release'">$(_CargoCmd) --release</_CargoCmd>
+    </PropertyGroup>
+    <Message Importance="high" Text="[WinRT.RustComponent.Build] $(_CargoCmd)" />
+    <Exec Command="$(_CargoCmd)" WorkingDirectory="$(_WinRTCargoManifestDir)" />
+  </Target>
+
+  <Target Name="WinRTCopyNativeLibrary"
+          BeforeTargets="AssignTargetPaths;GetCopyToOutputDirectoryItems"
+          DependsOnTargets="WinRTBuildRustComponent"
+          Condition="'$(WinRTCopyNativeLibrary)' != 'false' and '$(WinRTNativeLibraryPath)' != '' and Exists('$(WinRTNativeLibraryPath)')">
+    <ItemGroup>
+      <None Include="$(WinRTNativeLibraryPath)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <TargetPath>$([System.IO.Path]::GetFileName('$(WinRTNativeLibraryPath)'))</TargetPath>
+        <Visible>false</Visible>
+      </None>
+    </ItemGroup>
+  </Target>
+
+</Project>

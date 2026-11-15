@@ -1,0 +1,9 @@
+[package]
+name = "winrt-cross-pal"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Cross-platform WinRT ABI platform abstraction layer (HSTRING, CoTaskMem, MTA, activation dispatch) for non-Windows hosts"
+
+[dependencies]
+windows-core.workspace = true

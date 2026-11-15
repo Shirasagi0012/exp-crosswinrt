@@ -1,0 +1,16 @@
+# Rust build artifacts
+target/
+**/target/
+examples/*/rust/src/bindings.rs
+
+# .NET build artifacts
+**/bin/
+**/obj/
+*.user
+*.suo
+.vs/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,10 @@
+[package]
+name = "winrt-server-shims"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Server-side WinRT shims (IActivationFactory, WinRtArray, DummyFactoryCache) missing from windows-core on non-Windows targets"
+
+[dependencies]
+windows-core.workspace = true
+winrt-cross-pal.workspace = true

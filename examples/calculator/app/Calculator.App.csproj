@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../dotnet/WinRT.RustComponent.Build/build/WinRT.RustComponent.Build.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Calculator.App</AssemblyName>
+    <RootNamespace>Calculator.App</RootNamespace>
+    <Optimize>true</Optimize>
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <WinRTConsumeInterop>true</WinRTConsumeInterop>
+    <WinRTCargoManifest>../rust/Cargo.toml</WinRTCargoManifest>
+    <WinRTAutoBuildCargo>true</WinRTAutoBuildCargo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <WinRTComponent Include="CalculatorDemo">
+      <WinMD>../rust/target/winmd/CalculatorDemo.winmd</WinMD>
+      <RefAssembly>../projection/bin/$(Configuration)/net10.0/ref/Calculator.Projection.dll</RefAssembly>
+      <ForwarderAssembly>../projection/bin/$(Configuration)/net10.0/Calculator.Projection.dll</ForwarderAssembly>
+    </WinRTComponent>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../projection/Calculator.Projection.csproj"
+                      ReferenceOutputAssembly="false"
+                      Private="false"
+                      ExcludeAssets="all" />
+    <ProjectReference Include="../../../dotnet/WinRT.CrossHosting/WinRT.CrossHosting.csproj" />
+  </ItemGroup>
+
+  <Import Project="../../../dotnet/WinRT.RustComponent.Build/build/WinRT.RustComponent.Build.targets" />
+</Project>
